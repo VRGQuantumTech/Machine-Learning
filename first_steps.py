@@ -87,8 +87,45 @@ print(model.predict([10.]))
 """
     SECOND EXERCISE: IMAGE RECOGNITION
     
-    
 """
+
+class myCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs = {}):
+        if (logs.get('accuracy') > 0.9):
+            print('\nAccuracty is enough so cancelling training!')
+            self.model.stop_training = True
+            
+
+callbacks = myCallback()
+fmnist = keras.datasets.fashion_mnist
+(train_images, train_labels) , (test_images, test_labels) = fmnist.load_data()
+
+print('Maximum value in data is: ' + str(train_images.max()))
+
+train_images = train_images/train_images.max()
+test_images = test_images/test_images.max()
+
+data_shape = train_images.shape
+
+model = keras.Sequential()
+
+model.add(keras.layers.Flatten(input_shape = (data_shape[1], data_shape[2])))
+model.add(keras.layers.Dense(units = 256, activation = tf.nn.relu))
+model.add(keras.layers.Dense(units = 256, activation = tf.nn.relu))
+model.add(keras.layers.Dense(units = 10, activation = tf.nn.softmax))
+
+model.compile(optimizer = tf.optimizers.Adam(),
+              loss = 'sparse_categorical_crossentropy',
+              metrics = ['accuracy'])
+
+model.fit(train_images, train_labels, epochs = 50, callbacks = [callbacks])
+
+#%%
+evaluation = model.evaluate(test_images, test_labels)
+print(evaluation)
+classifications = model.predict(test_images)
+print(classifications[0])
+
 
 
 
